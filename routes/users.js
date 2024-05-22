@@ -2,6 +2,7 @@ const express = require("express")
 const sequelize = require("sequelize")
 const { User, Show } = require("../models")
 const { check, validationResult } = require("express-validator")
+const { db } = require("../db/connection")
 
 const usersRouter = express.Router()
 usersRouter.use(express.json())
@@ -50,14 +51,17 @@ usersRouter.post("/", validator, async(req,res) => {
     }
 })
 
-usersRouter.put("/:id", async(req,res) => {
-    const showID= req.body.showID
+usersRouter.put("/:id/shows/:showID", async(req,res) => {
+    const showID= req.params.showID
     const show = await Show.findByPk(showID)
     const user = await User.findByPk(req.params.id,{
         include: Show
     })
     await user.addShow(show)
-    res.json(user)
+    const updatedUser = await User.findByPk(req.params.id, {
+        include: Show
+    })
+    res.json(updatedUser)
 })
 
 module.exports = usersRouter
