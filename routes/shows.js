@@ -36,11 +36,12 @@ showsRouter.get("/genre/:genre", async(req,res) => {
     res.json(shows)
 })
 
-const validator = [
-    check("title").isLength({min:1, max: 25})
+const createValidator = [
+    check("title").isLength({min:1, max: 25}),
+    check("status").isLength({min:1 ,max: 25})
 ]
 
-showsRouter.post("/", validator, async(req,res) => {
+showsRouter.post("/", createValidator, async(req,res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         res.status(400).json({error: errors.array()})
@@ -49,7 +50,8 @@ showsRouter.post("/", validator, async(req,res) => {
             title: req.body.title,
             genre: req.body.genre,
             rating: req.body.rating,
-            available: req.body.available
+            available: req.body.available,
+            status: req.body.status
         })
         res.json(show)
     }
@@ -61,7 +63,8 @@ showsRouter.put("/:id/available", async(req,res) => {
         title: show.title,
         genre: show.genre,
         rating: show.rating,
-        available: !show.available
+        available: !show.available,
+        status: show.status
     })
     res.json(show)
 })
@@ -76,10 +79,29 @@ showsRouter.put("/:id/rating", [check("rating").not().isEmpty()] ,async(req,res)
             title: show.title,
             genre: show.genre,
             rating: req.body.rating,
-            available: show.available
+            available: show.available,
+            status: show.status
         })
         res.json(show)
     }
+})
+
+showsRouter.put("/:id/status", async(req,res) => {
+    const show = await Show.findByPk(req.params.id)
+    let newStatus;
+    if (show.status == "On-going") {
+        newStatus = "Canceled"
+    } else if (show.status == "Canceled") {
+        newStatus = "On-going"
+    }
+    await show.update({
+        title: show.title,
+        genre: show.genre,
+        rating: req.body.rating,
+        available: show.available,
+        status: newStatus
+    })
+    res.json(show)
 })
 
 showsRouter.delete("/:id", async(req,res) => {
