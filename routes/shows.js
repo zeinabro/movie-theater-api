@@ -55,7 +55,7 @@ showsRouter.post("/", validator, async(req,res) => {
     }
 })
 
-showsRouter.put("/:id", async(req,res) => {
+showsRouter.put("/:id/available", async(req,res) => {
     const show = await Show.findByPk(req.params.id)
     await show.update({
         title: show.title,
@@ -64,6 +64,22 @@ showsRouter.put("/:id", async(req,res) => {
         available: !show.available
     })
     res.json(show)
+})
+
+showsRouter.put("/:id/rating", [check("rating").not().isEmpty()] ,async(req,res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        res.status(400).json({error: errors.array()})
+    } else {
+        const show = await Show.findByPk(req.params.id)
+        await show.update({
+            title: show.title,
+            genre: show.genre,
+            rating: req.body.rating,
+            available: show.available
+        })
+        res.json(show)
+    }
 })
 
 showsRouter.delete("/:id", async(req,res) => {
